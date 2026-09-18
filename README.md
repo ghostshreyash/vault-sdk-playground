@@ -15,6 +15,10 @@ npm run dev   # http://localhost:5190
    `SDK/vault-client-sdk` checkout), and variables such as `vaultId` and `botId`.
 2. **Methods** (left): every method on the `Vault` class, grouped as in the SDK source, with
    its JSDoc under the **Docs** tab. `internal` and `sync` methods are marked, not hidden.
+   When the local SDK checkout is available, `setBotLlm`, `testBotLlm`, `setBotLlmEnabled`,
+   `clearBotLlm`, and `getLlmProviders` are grouped under **Bot LLM** and work through the
+   same argument editor, request execution, traffic capture, responses, saved requests, and
+   history as `createBot` and `updateBot`.
 3. **Arguments**: each argument can be sent as String, Number, Boolean, JSON, File, File[],
    JS expression, `null` or `undefined`, whatever the docs say. Use `{{vaultId}}` for
    variables. **Add extra argument** passes more arguments than the signature declares.

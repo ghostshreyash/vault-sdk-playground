@@ -29,6 +29,14 @@ export interface MethodInfo {
 
 export const CORE_GROUP = "Core";
 export const INHERITED_GROUP = "EventEmitter (inherited)";
+export const BOT_LLM_GROUP = "Bot LLM";
+export const BOT_LLM_METHODS = new Set([
+  "setBotLlm",
+  "testBotLlm",
+  "setBotLlmEnabled",
+  "clearBotLlm",
+  "getLlmProviders",
+]);
 const UNLISTED_GROUP = "Not found in source";
 const NOT_METHODS = new Set(["constructor", "if", "for", "while", "switch", "catch", "function", "return"]);
 
@@ -208,7 +216,9 @@ export function buildCatalog(rawSource: string, VaultClass: { prototype: object 
 
     methods.push({
       name,
-      group: sections.filter((s) => s.index < index).pop()?.title ?? CORE_GROUP,
+      group: BOT_LLM_METHODS.has(name)
+        ? BOT_LLM_GROUP
+        : sections.filter((s) => s.index < index).pop()?.title ?? CORE_GROUP,
       isAsync: Boolean(match[1]),
       internal: doc.isPrivate || /^internal\b/i.test(doc.summary),
       inherited: false,
