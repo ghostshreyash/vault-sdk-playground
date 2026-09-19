@@ -41,6 +41,10 @@ export const SCRIPT_METHOD = "__script__";
 
 const VAR_PATTERN = /\{\{\s*([\w.-]+)\s*\}\}/g;
 
+// Every property is optional for updateBot. Start empty so the user only sends
+// the fields they intend to change.
+const UPDATE_BOT_TEMPLATE = "{\n  \n}";
+
 export const substitute = (text: string, vars: Record<string, string>) =>
   text.replace(VAR_PATTERN, (match, key: string) => (key in vars ? vars[key] : match));
 
@@ -84,6 +88,10 @@ export function createDrafts(method: MethodInfo, vars: Record<string, string>): 
 
     let mode: ArgMode = "string";
     let value = fromVar;
+
+    if (method.name === "updateBot" && param.name === "updates") {
+      return { name: param.name, mode: "json", value: UPDATE_BOT_TEMPLATE };
+    }
 
     if (type.includes("blob") || /^files?$/.test(param.name)) {
       mode = param.name === "files" ? "files" : "file";
