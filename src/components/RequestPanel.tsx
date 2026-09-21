@@ -173,7 +173,18 @@ function MethodRequest({ method, sdk }: { method: MethodInfo; sdk: LoadedSdk }) 
                 key={index}
                 index={index}
                 draft={row}
-                doc={method.paramDocs.find((d) => d.name === row.name)}
+                doc={
+                  method.name === "updateBot" && row.name === "updates"
+                    ? {
+                        name: row.name,
+                        type: "Object",
+                        optional: false,
+                        description:
+                          "Optional fields: name, description, profession, useLLMFallback, wordLimit. Add only the fields you want to change; {} is valid.",
+                        children: [],
+                      }
+                    : method.paramDocs.find((d) => d.name === row.name)
+                }
                 vars={vars}
                 onChange={(patch) => update(index, patch)}
                 onRemove={() => remove(index)}
