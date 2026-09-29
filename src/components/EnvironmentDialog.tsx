@@ -19,6 +19,9 @@ import { NativeSelect } from "@/components/common";
 const PRESETS: { label: string; base: string; ws: string }[] = [
   { label: "Gateway :8000", base: "http://localhost:8000", ws: "ws://localhost:8000/ws/chat" },
   { label: "Vault direct :7000", base: "http://localhost:7000/api", ws: "ws://localhost:7000/ws/chat" },
+  { label: "Dev gateway", base: "https://sdk.twns.ai", ws: "wss://sdk.twns.ai/ws/chat" },
+  { label: "Staging gateway", base: "https://stagingsdk.twns.ai", ws: "wss://stagingsdk.twns.ai/ws/chat" },
+  { label: "Production gateway", base: "https://sdk.twinprotocol.ai", ws: "wss://sdk.twinprotocol.ai/ws/chat" },
 ];
 
 const SECRET_LABELS: Record<(typeof SECRET_FIELDS)[number], string> = {
