@@ -39,6 +39,6 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["events", "crypto-browserify", "stream-browserify", "buffer"],
-    exclude: ["vault-sdk-dev", "vault-sdk-staging"],
+    exclude: ["vault-sdk-dev", "vault-sdk-staging", "vault-sdk-prod"],
   },
 })
