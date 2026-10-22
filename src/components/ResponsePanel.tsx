@@ -14,7 +14,7 @@ import { EmptyState, JsonView } from "@/components/common";
 import { TrafficList } from "@/components/TrafficList";
 
 const PHASE_LABEL = {
-  constructor: "new Vault() threw — check the environment config",
+  constructor: "Creating the SDK instance threw — check the environment config",
   arguments: "Could not build the arguments — the SDK was not called",
   call: "The SDK threw",
 };

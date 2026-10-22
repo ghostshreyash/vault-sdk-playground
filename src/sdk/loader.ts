@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { create } from "zustand";
-import { buildCatalog, type MethodInfo } from "./catalog";
-import { sourceById, type SdkSourceId } from "./sources";
+import { buildCatalog, buildCatalogFromDts, type MethodInfo } from "./catalog";
+import { familyOf, sourceById, type SdkFamily, type SdkSourceId } from "./sources";
 
 export interface LoadedSdk {
   sourceId: SdkSourceId;
+  family: SdkFamily;
   Vault: new (config: unknown) => unknown;
   packageName: string;
   version: string;
@@ -36,15 +37,21 @@ export function loadSdk(id: SdkSourceId, force = false) {
       const pkg = JSON.parse(packageJson) as { name?: string; version?: string };
       const packageName = pkg.name ?? id;
       const version = pkg.version ?? "?";
+      const family = familyOf(id);
+      const SdkClass = Vault as unknown as { prototype: object };
       setState(id, {
         status: "ready",
         sdk: {
           sourceId: id,
+          family,
           Vault,
           packageName,
           version,
           label: `${packageName}@${version}${id === "local" ? " (local)" : ""}`,
-          methods: buildCatalog(source, Vault as unknown as { prototype: object }),
+          methods:
+            family === "connect"
+              ? buildCatalogFromDts(source, SdkClass, "VaultConnectBrowser")
+              : buildCatalog(source, SdkClass),
         },
       });
     })

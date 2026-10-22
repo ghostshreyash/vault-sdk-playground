@@ -180,6 +180,81 @@ function parseJsDoc(block: string): ParsedDoc {
  * The method list is read from the SDK's own source, so it always matches the
  * build that is loaded. The prototype is the ground truth for what exists.
  */
+// The steps connect() runs for you (and the callback page's handleRedirect) are not listed.
+const CONNECT_HIDDEN = new Set(["handleRedirect", "getConnectUrl", "handleCallback"]);
+
+const CONNECT_GROUPS: Record<string, string> = {
+  connect: "Connect",
+  setUser: "Connect",
+  getConnection: "Connection",
+  getProfile: "Connection",
+  disconnect: "Connection",
+};
+
+// "{ max?: number; }" -> [{ name: "max", type: "number", optional: true }]
+function objectTypeChildren(type: string): ParamDoc[] {
+  const body = type.trim();
+  if (!body.startsWith("{") || !body.endsWith("}")) return [];
+  return splitTopLevel(body.slice(1, -1).replace(/;/g, ",")).flatMap((member) => {
+    const m = /^([\w$]+)(\?)?\s*:\s*([\s\S]+)$/.exec(member);
+    return m ? [{ name: m[1], type: m[3].trim(), optional: Boolean(m[2]), description: "", children: [] }] : [];
+  });
+}
+
+// vault-connect-sdk ships compiled code, so the method list comes from its .d.ts instead of JSDoc'd source.
+export function buildCatalogFromDts(dts: string, SdkClass: { prototype: object }, className: string): MethodInfo[] {
+  const text = dts.replace(/\r\n?/g, "\n");
+  const start = text.search(new RegExp(String.raw`declare class ${className}\b[^{]*\{`));
+  if (start === -1) return [];
+  const open = text.indexOf("{", start);
+  const body = text.slice(open + 1, findClosing(text, open));
+  const proto = SdkClass.prototype as Record<string, unknown>;
+  const methods: MethodInfo[] = [];
+
+  for (const match of body.matchAll(/^ {4}([A-Za-z_$][\w$]*)\(/gm)) {
+    const name = match[1];
+    if (name === "constructor" || CONNECT_HIDDEN.has(name) || typeof proto[name] !== "function") continue;
+    const index = match.index ?? 0;
+    const paramOpen = index + match[0].length - 1;
+    const paramClose = findClosing(body, paramOpen);
+    if (paramClose === -1) continue;
+
+    const returnType = /^\s*:\s*([^;]+);/.exec(body.slice(paramClose + 1))?.[1].trim();
+    const before = body.slice(0, index).trimEnd();
+    const summary = before.endsWith("*/")
+      ? before
+          .slice(before.lastIndexOf("/**") + 3, -2)
+          .replace(/^\s*\*\s?/gm, "")
+          .trim()
+      : "";
+
+    const paramDocs: ParamDoc[] = splitTopLevel(body.slice(paramOpen + 1, paramClose)).flatMap((part) => {
+      const m = /^([\w$]+)(\?)?\s*:\s*([\s\S]+)$/.exec(part);
+      if (!m) return [];
+      const type = m[3].trim();
+      const children = objectTypeChildren(type);
+      // Named option types (ConnectFlowOptions, PageOptions...) are objects; prefill them as JSON.
+      const shownType = children.length || /Options$/.test(type) ? "object" : type;
+      return [{ name: m[1], type: shownType, optional: Boolean(m[2]), description: type, children }];
+    });
+
+    methods.push({
+      name,
+      group: CONNECT_GROUPS[name] ?? "Files",
+      isAsync: Boolean(returnType?.startsWith("Promise")),
+      internal: false,
+      inherited: false,
+      params: paramDocs.map((doc) => ({ name: doc.name, rest: false })),
+      summary,
+      paramDocs,
+      returns: returnType ? { type: returnType, description: "" } : undefined,
+      throws: [],
+      examples: [],
+    });
+  }
+  return methods;
+}
+
 export function buildCatalog(rawSource: string, VaultClass: { prototype: object }): MethodInfo[] {
   const source = rawSource.replace(/\r\n?/g, "\n");
   const proto = VaultClass.prototype as Record<string, unknown>;

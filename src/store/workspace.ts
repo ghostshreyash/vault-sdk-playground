@@ -9,7 +9,15 @@ export interface EnvConfig {
   VAULT_ACCESS_KEY: string;
   VAULT_SECRET_KEY: string;
   VAULT_CLIENT_API_KEY: string;
+  // Vault Connect sources only. Optional so environments saved before they existed still load.
+  VC_CLIENT_ID?: string;
+  VC_REDIRECT_URI?: string;
+  VC_API_URL?: string;
+  VC_APP_URL?: string;
 }
+
+// The popup lands here; register this exact URL on the app in the developer portal.
+export const connectCallbackUrl = () => `${window.location.origin}/connect-callback.html`;
 
 export interface EnvVar {
   key: string;
@@ -62,8 +70,18 @@ export const newEnvironment = (name = "New environment"): Environment => ({
     VAULT_ACCESS_KEY: "",
     VAULT_SECRET_KEY: "",
     VAULT_CLIENT_API_KEY: "",
+    VC_CLIENT_ID: "",
+    VC_REDIRECT_URI: connectCallbackUrl(),
+    VC_API_URL: "",
+    VC_APP_URL: "",
   },
   vars: ["vaultId", "botId", "fileId", "folderId", "sessionId", "priceId"].map((key) => ({ key, value: "" })),
+});
+
+export const newConnectEnvironment = (source: "connect-dev" | "connect-staging"): Environment => ({
+  ...newEnvironment(source === "connect-dev" ? "Vault Connect dev" : "Vault Connect staging"),
+  source,
+  vars: ["fileId", "folderId"].map((key) => ({ key, value: "" })),
 });
 
 export const stripFiles = (drafts: ArgDraft[]): ArgDraft[] =>

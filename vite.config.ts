@@ -21,7 +21,9 @@ export default defineConfig({
       // The unpublished SDK source has no node_modules of its own, so its bare
       // imports below must resolve from this project.
       { find: /^vault-sdk-local\//, replacement: `${hasLocalSdk ? localSdkDir : here("./src/stub-sdk")}/` },
-      { find: /^axios$/, replacement: nm("axios/dist/esm/axios.js") },
+      // The packages export only their code; the type file and package.json are read raw for the method list.
+      { find: /^vault-connect-(dev|staging)-files\//, replacement: `${nm("vault-connect-$1")}/` },
+      { find: /^axios$/,replacement: nm("axios/dist/esm/axios.js") },
       { find: /^events$/, replacement: nm("events/events.js") },
       { find: /^crypto$/, replacement: nm("crypto-browserify/index.js") },
       { find: /^stream$/, replacement: nm("stream-browserify/index.js") },
@@ -32,6 +34,11 @@ export default defineConfig({
   server: {
     fs: { allow: [here("..")] },
   },
+  build: {
+    rollupOptions: {
+      input: { main: here("./index.html"), connectCallback: here("./connect-callback.html") },
+    },
+  },
   define: {
     "process.env": {},
     global: "window",
@@ -39,6 +46,14 @@ export default defineConfig({
   },
   optimizeDeps: {
     include: ["events", "crypto-browserify", "stream-browserify", "buffer"],
-    exclude: ["vault-sdk-dev", "vault-sdk-staging", "vault-sdk-prod"],
+    exclude: [
+      "vault-sdk-dev",
+      "vault-sdk-staging",
+      "vault-sdk-prod",
+      "vault-connect-dev",
+      "vault-connect-staging",
+      "vault-connect-dev-files",
+      "vault-connect-staging-files",
+    ],
   },
 })

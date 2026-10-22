@@ -13,6 +13,22 @@ npm run dev   # http://localhost:5190
 1. **Environment** (top bar → Edit): base URL, optional WS URL, the three keys, the SDK
    source (`vault-sdk-dev`, `vault-sdk-staging`, `vault-sdk-prod`, or the local
    `SDK/vault-client-sdk` checkout), and variables such as `vaultId` and `botId`.
+
+   **Vault Connect** (`vault-connect-dev`, `vault-connect-staging`): use **+ Vault Connect dev**
+   or **+ Vault Connect staging** in the Environments dialog. Create a *Browser or mobile app*
+   in Test mode on the developer portal (dev: platform.stagingapps.xyz, staging:
+   platform.twns.ai). Register `<playground address>/connect-callback.html` as its redirect URL
+   and `<playground address>` as its allowed origin, then paste its client ID. Send `connect`
+   first. It opens the Vault window (dev: vault.stagingapps.xyz, staging: vault.twns.ai), and
+   every other method then uses the connected user.
+
+   | Playground | Redirect URL | Allowed origin |
+   |---|---|---|
+   | Hosted | `https://vault-sdk-playground.vercel.app/connect-callback.html` | `https://vault-sdk-playground.vercel.app` |
+   | Local | `http://localhost:5190/connect-callback.html` | `http://localhost:5190` |
+
+   One app can register both rows. The Recruitly demo (https://vault-connect-demo.vercel.app)
+   is the end-to-end example of the same SDK.
 2. **Methods** (left): every method on the `Vault` class, grouped as in the SDK source, with
    its JSDoc under the **Docs** tab. `internal` and `sync` methods are marked, not hidden.
 3. **Arguments**: each argument can be sent as String, Number, Boolean, JSON, File, File[],

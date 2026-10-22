@@ -20,6 +20,14 @@ Not a git repo yet and not deployed. Runs locally on port 5190.
   (imported with `?raw`) for methods, parameters, JSDoc and `// ─── Section ───` groups, and
   cross-checks the class prototype. A new SDK method appears without touching this app.
   Keep that JSDoc format in `vault-client-sdk` or argument prefill degrades to plain strings.
+- **Vault Connect sources** (`connect-dev`, `connect-staging`) load `VaultConnectBrowser` from
+  `vault-connect-{dev,staging}/browser`. The packages ship compiled code only, so
+  `buildCatalogFromDts` reads the methods from `browser.d.ts` through the
+  `vault-connect-*-files/` alias. It skips `handleRedirect`, `getConnectUrl` and
+  `handleCallback`, which `connect()` and the callback page run. Calls go through fetch, so
+  traffic is captured by the `fetch` option in `connectOptions` (runtime.ts), not by axios.
+  `connect-callback.html` is a second build entry: the popup lands there and hands the result
+  back to the opener.
 - **Four SDK sources**, chosen per environment (`src/sdk/sources.ts`): `vault-sdk-dev`,
   `vault-sdk-staging` and `vault-sdk-prod` from npm, plus the sibling checkout
   `../vault-client-sdk` via the `vault-sdk-local/` alias. Adding another published channel
