@@ -1,4 +1,9 @@
-export type SdkSourceId = "dev" | "staging" | "prod" | "local";
+export type SdkSourceId = "dev" | "staging" | "prod" | "local" | "connect-dev" | "connect-staging";
+
+// "vault" is the Vault class from vault-client-sdk; "connect" is VaultConnectBrowser from vault-connect-sdk.
+export type SdkFamily = "vault" | "connect";
+
+export const familyOf = (id: SdkSourceId): SdkFamily => (id.startsWith("connect-") ? "connect" : "vault");
 
 export interface SdkBundle {
   module: { default: unknown; VaultError?: unknown; ValidationError?: unknown };
@@ -65,6 +70,28 @@ const ALL_SOURCES: SdkSource[] = [
         import("vault-sdk-local/index.js"),
         import("vault-sdk-local/src/Vault.js?raw"),
         import("vault-sdk-local/package.json?raw")
+      ),
+  },
+  {
+    id: "connect-dev",
+    label: "vault-connect-dev (npm)",
+    description: "Vault Connect browser SDK against the dev Vault (vaultapi.stagingapps.xyz).",
+    load: () =>
+      bundle(
+        import("vault-connect-dev/browser"),
+        import("vault-connect-dev-files/browser.d.ts?raw"),
+        import("vault-connect-dev-files/package.json?raw")
+      ),
+  },
+  {
+    id: "connect-staging",
+    label: "vault-connect-staging (npm)",
+    description: "Vault Connect browser SDK against the staging Vault (vaultapi.twns.ai).",
+    load: () =>
+      bundle(
+        import("vault-connect-staging/browser"),
+        import("vault-connect-staging-files/browser.d.ts?raw"),
+        import("vault-connect-staging-files/package.json?raw")
       ),
   },
 ];

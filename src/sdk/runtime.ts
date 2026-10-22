@@ -52,6 +52,52 @@ function instrumentAxios(target: Interceptable | undefined) {
 // Uploads PUT to storage through the default axios export, not the SDK's client.
 instrumentAxios(axios as unknown as Interceptable);
 
+const TEXT_BODY = /json|text|xml|urlencoded/i;
+
+const readBody = async (response: Response) => {
+  const type = response.headers.get("content-type") ?? "";
+  if (!TEXT_BODY.test(type)) return `<${type || "binary"}, ${response.headers.get("content-length") ?? "?"} bytes>`;
+  const text = await response.clone().text();
+  try {
+    return JSON.parse(text);
+  } catch {
+    return text;
+  }
+};
+
+// Vault Connect uses fetch, not axios, so its calls (uploads included) go through this.
+const recordingFetch: typeof fetch = async (input, init) => {
+  // Read url, method and headers without new Request(), which would lock a streamed upload body.
+  const url = input instanceof Request ? input.url : String(input);
+  const handle = recordHttpStart({
+    method: init?.method ?? (input instanceof Request ? input.method : "GET"),
+    url,
+    headers: Object.fromEntries(new Headers(init?.headers)),
+    data: typeof init?.body === "string" ? init.body : init?.body ? "<binary body>" : undefined,
+  });
+  try {
+    const response = await fetch(input, init);
+    recordHttpEnd(handle, {
+      status: response.status,
+      headers: Object.fromEntries(response.headers),
+      data: await readBody(response),
+    });
+    return response;
+  } catch (error) {
+    recordHttpEnd(handle, { error: (error as Error).message });
+    throw error;
+  }
+};
+
+export const connectOptions = (config: EnvConfig) => ({
+  clientId: config.VC_CLIENT_ID ?? "",
+  redirectUri: config.VC_REDIRECT_URI ?? "",
+  ...(config.VC_API_URL && { apiUrl: config.VC_API_URL }),
+  ...(config.VC_APP_URL && { appUrl: config.VC_APP_URL }),
+  rememberUser: true,
+  fetch: recordingFetch,
+});
+
 let current: { key: string; instance: VaultInstance; createdAt: number } | null = null;
 
 export function getVault(sdk: LoadedSdk, config: EnvConfig): VaultInstance {
@@ -59,7 +105,7 @@ export function getVault(sdk: LoadedSdk, config: EnvConfig): VaultInstance {
   if (current?.key === key) return current.instance;
 
   disposeVault();
-  const instance = new sdk.Vault({ ...config }) as VaultInstance;
+  const instance = new sdk.Vault(sdk.family === "connect" ? connectOptions(config) : { ...config }) as VaultInstance;
   instrumentAxios(instance.httpClient);
 
   if (typeof instance.emit === "function") {

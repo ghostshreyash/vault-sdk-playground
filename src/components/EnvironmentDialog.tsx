@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Copy, Eye, EyeOff, Plus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { SDK_SOURCES, type SdkSourceId } from "@/sdk/sources";
+import { familyOf, SDK_SOURCES, type SdkSourceId } from "@/sdk/sources";
 import {
+  connectCallbackUrl,
+  newConnectEnvironment,
   newEnvironment,
   SECRET_FIELDS,
   uid,
@@ -45,6 +47,11 @@ export function EnvironmentDialog({ open, onOpenChange }: { open: boolean; onOpe
     addEnvironment(next);
     setEditingId(next.id);
   };
+  const createConnect = (source: "connect-dev" | "connect-staging") => {
+    const next = newConnectEnvironment(source);
+    addEnvironment(next);
+    setEditingId(next.id);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -74,6 +81,17 @@ export function EnvironmentDialog({ open, onOpenChange }: { open: boolean; onOpe
             ))}
             <Button variant="ghost" size="sm" className="mt-2 w-full justify-start" onClick={() => create()}>
               <Plus /> New
+            </Button>
+            <Button variant="ghost" size="sm" className="w-full justify-start" onClick={() => createConnect("connect-dev")}>
+              <Plus /> Vault Connect dev
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
+              onClick={() => createConnect("connect-staging")}
+            >
+              <Plus /> Vault Connect staging
             </Button>
           </div>
           <div className="overflow-y-auto p-6">
@@ -134,6 +152,10 @@ function EnvironmentForm({
         </div>
       </div>
 
+      {familyOf(env.source) === "connect" ? (
+        <ConnectFields env={env} setConfig={setConfig} />
+      ) : (
+      <>
       <div className="space-y-3">
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium">Endpoints</span>
@@ -188,6 +210,8 @@ function EnvironmentForm({
           Leave any of these empty or wrong on purpose to see how the SDK reacts. Nothing is validated here.
         </p>
       </div>
+      </>
+      )}
 
       <div className="space-y-2">
         <span className="text-sm font-medium">Variables</span>
@@ -237,6 +261,69 @@ function EnvironmentForm({
         <Button variant="ghost" className="ml-auto text-destructive" onClick={() => removeEnvironment(env.id)}>
           <Trash2 /> Delete
         </Button>
+      </div>
+    </div>
+  );
+}
+
+const PORTALS: Record<string, string> = {
+  "connect-dev": "https://platform.stagingapps.xyz",
+  "connect-staging": "https://platform.twns.ai",
+};
+
+function ConnectFields({
+  env,
+  setConfig,
+}: {
+  env: Environment;
+  setConfig: (field: keyof EnvConfig, value: string) => void;
+}) {
+  const callback = connectCallbackUrl();
+  const field = (key: keyof EnvConfig, label: string, placeholder = "") => (
+    <div className="space-y-1.5">
+      <Label className="text-xs">{label}</Label>
+      <Input
+        value={env.config[key] ?? ""}
+        placeholder={placeholder}
+        spellCheck={false}
+        onChange={(e) => setConfig(key, e.target.value)}
+        className="font-mono text-xs"
+      />
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      <span className="text-sm font-medium">Vault Connect app</span>
+      <p className="text-[11px] text-muted-foreground">
+        Create a <b>Browser or mobile app</b> in Test mode on{" "}
+        <a href={PORTALS[env.source]} target="_blank" rel="noreferrer" className="underline">
+          {PORTALS[env.source]}
+        </a>
+        . Register the redirect URL <code className="font-mono">{callback}</code> and the allowed origin{" "}
+        <code className="font-mono">{window.location.origin}</code>, then paste its client ID here. Run{" "}
+        <code className="font-mono">connect</code> first; the other methods use the connected user.
+      </p>
+      <div className="grid gap-3 md:grid-cols-2">
+        {field("VC_CLIENT_ID", "Client ID", "vc_test_...")}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <Label className="text-xs">Redirect URL</Label>
+            {env.config.VC_REDIRECT_URI !== callback && (
+              <Button variant="ghost" size="xs" onClick={() => setConfig("VC_REDIRECT_URI", callback)}>
+                Use this playground&apos;s
+              </Button>
+            )}
+          </div>
+          <Input
+            value={env.config.VC_REDIRECT_URI ?? ""}
+            spellCheck={false}
+            onChange={(e) => setConfig("VC_REDIRECT_URI", e.target.value)}
+            className="font-mono text-xs"
+          />
+        </div>
+        {field("VC_API_URL", "API URL override (optional)", "the package's own host")}
+        {field("VC_APP_URL", "Vault app URL override (optional)", "the package's own host")}
       </div>
     </div>
   );

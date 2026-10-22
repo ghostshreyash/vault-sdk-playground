@@ -1,4 +1,6 @@
 import type { MethodInfo, ParamDoc } from "./catalog";
+import type { SdkFamily } from "./sources";
+import type { EnvConfig } from "@/store/workspace";
 
 export type ArgMode =
   | "string"
@@ -200,18 +202,25 @@ export function toCode(options: {
   script: string;
   vars: Record<string, string>;
   packageName: string;
-  baseUrl: string;
-  wsUrl: string;
+  family: SdkFamily;
+  config: EnvConfig;
 }): string {
-  const config = [
-    `  VAULT_ACCESS_KEY: process.env.VAULT_ACCESS_KEY,`,
-    `  VAULT_SECRET_KEY: process.env.VAULT_SECRET_KEY,`,
-    `  VAULT_CLIENT_API_KEY: process.env.VAULT_CLIENT_API_KEY,`,
-    `  VAULT_BASE_URL: ${JSON.stringify(options.baseUrl)},`,
-    ...(options.wsUrl ? [`  VAULT_WS_URL: ${JSON.stringify(options.wsUrl)},`] : []),
-  ].join("\n");
-
-  const header = `import Vault from "${options.packageName}";\n\nconst vault = new Vault({\n${config}\n});\n\n`;
+  const { config: env } = options;
+  const header =
+    options.family === "connect"
+      ? `import { VaultConnectBrowser } from "${options.packageName}/browser";\n\nconst vault = new VaultConnectBrowser({\n` +
+        `  clientId: ${JSON.stringify(env.VC_CLIENT_ID ?? "")},\n` +
+        `  redirectUri: ${JSON.stringify(env.VC_REDIRECT_URI ?? "")},\n` +
+        `});\n\n// Call vault.connect() from a click first; the calls below use the connected user.\n\n`
+      : `import Vault from "${options.packageName}";\n\nconst vault = new Vault({\n` +
+        [
+          `  VAULT_ACCESS_KEY: process.env.VAULT_ACCESS_KEY,`,
+          `  VAULT_SECRET_KEY: process.env.VAULT_SECRET_KEY,`,
+          `  VAULT_CLIENT_API_KEY: process.env.VAULT_CLIENT_API_KEY,`,
+          `  VAULT_BASE_URL: ${JSON.stringify(env.VAULT_BASE_URL)},`,
+          ...(env.VAULT_WS_URL ? [`  VAULT_WS_URL: ${JSON.stringify(env.VAULT_WS_URL)},`] : []),
+        ].join("\n") +
+        `\n});\n\n`;
 
   if (options.method === SCRIPT_METHOD) {
     const vars = JSON.stringify(options.vars, null, 2);

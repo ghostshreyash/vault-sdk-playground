@@ -121,8 +121,8 @@ function MethodRequest({ method, sdk }: { method: MethodInfo; sdk: LoadedSdk }) 
     script: "",
     vars,
     packageName: sdk.packageName,
-    baseUrl: env.config.VAULT_BASE_URL,
-    wsUrl: env.config.VAULT_WS_URL,
+    family: sdk.family,
+    config: env.config,
   });
 
   return (
@@ -528,8 +528,8 @@ function ScriptRequest({ sdk }: { sdk: LoadedSdk }) {
               script,
               vars,
               packageName: sdk.packageName,
-              baseUrl: env.config.VAULT_BASE_URL,
-              wsUrl: env.config.VAULT_WS_URL,
+              family: sdk.family,
+              config: env.config,
             })}
           />
         </TabsContent>
