@@ -14,12 +14,13 @@ npm run dev   # http://localhost:5190
    source (`vault-sdk-dev`, `vault-sdk-staging`, `vault-sdk-prod`, or the local
    `SDK/vault-client-sdk` checkout), and variables such as `vaultId` and `botId`.
 
-   **Vault Connect** (`vault-connect-dev`, `vault-connect-staging`): use **+ Vault Connect dev**
-   or **+ Vault Connect staging** in the Environments dialog. Create a *Browser or mobile app*
-   in Test mode on the developer portal (dev: platform.stagingapps.xyz, staging:
-   platform.twns.ai). Register `<playground address>/connect-callback.html` as its redirect URL
-   and `<playground address>` as its allowed origin, then paste its client ID. Send `connect`
-   first. It opens the Vault window (dev: vault.stagingapps.xyz, staging: vault.twns.ai), and
+   **Vault Connect** (`vault-connect-dev`, `vault-connect-staging`, `vault-connect`): use
+   **+ Vault Connect dev**, **staging** or **production** in the Environments dialog. Create a
+   *Browser or mobile app* in Test mode on the developer portal (dev: platform.stagingapps.xyz,
+   staging: platform.twns.ai, production: platform.twinprotocol.ai). Register
+   `<playground address>/connect-callback.html` as its redirect URL and `<playground address>` as
+   its allowed origin, then paste its client ID. Send `connect` first. It opens the Vault window
+   (dev: vault.stagingapps.xyz, staging: vault.twns.ai, production: vault.twinprotocol.ai), and
    every other method then uses the connected user.
 
    | Playground | Redirect URL | Allowed origin |

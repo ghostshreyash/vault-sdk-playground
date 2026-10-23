@@ -5,6 +5,7 @@ import type { Environment } from "@/store/workspace";
 const loaders = {
   "connect-dev": () => import("vault-connect-dev/browser"),
   "connect-staging": () => import("vault-connect-staging/browser"),
+  "connect-prod": () => import("vault-connect/browser"),
 };
 
 const show = (text: string) => {

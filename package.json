@@ -26,6 +26,7 @@
     "stream-browserify": "^3.0.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
+    "vault-connect": "^0.1.2",
     "vault-connect-dev": "^0.1.2",
     "vault-connect-staging": "^0.1.2",
     "vault-sdk-dev": "^4.0.3",
