@@ -9,6 +9,7 @@ import {
   SECRET_FIELDS,
   uid,
   useWorkspace,
+  type ConnectSource,
   type EnvConfig,
   type Environment,
 } from "@/store/workspace";
@@ -47,7 +48,7 @@ export function EnvironmentDialog({ open, onOpenChange }: { open: boolean; onOpe
     addEnvironment(next);
     setEditingId(next.id);
   };
-  const createConnect = (source: "connect-dev" | "connect-staging") => {
+  const createConnect = (source: ConnectSource) => {
     const next = newConnectEnvironment(source);
     addEnvironment(next);
     setEditingId(next.id);
@@ -92,6 +93,14 @@ export function EnvironmentDialog({ open, onOpenChange }: { open: boolean; onOpe
               onClick={() => createConnect("connect-staging")}
             >
               <Plus /> Vault Connect staging
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start"
+              onClick={() => createConnect("connect-prod")}
+            >
+              <Plus /> Vault Connect production
             </Button>
           </div>
           <div className="overflow-y-auto p-6">
@@ -269,6 +278,7 @@ function EnvironmentForm({
 const PORTALS: Record<string, string> = {
   "connect-dev": "https://platform.stagingapps.xyz",
   "connect-staging": "https://platform.twns.ai",
+  "connect-prod": "https://platform.twinprotocol.ai",
 };
 
 function ConnectFields({

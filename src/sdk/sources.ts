@@ -1,4 +1,4 @@
-export type SdkSourceId = "dev" | "staging" | "prod" | "local" | "connect-dev" | "connect-staging";
+export type SdkSourceId = "dev" | "staging" | "prod" | "local" | "connect-dev" | "connect-staging" | "connect-prod";
 
 // "vault" is the Vault class from vault-client-sdk; "connect" is VaultConnectBrowser from vault-connect-sdk.
 export type SdkFamily = "vault" | "connect";
@@ -92,6 +92,17 @@ const ALL_SOURCES: SdkSource[] = [
         import("vault-connect-staging/browser"),
         import("vault-connect-staging-files/browser.d.ts?raw"),
         import("vault-connect-staging-files/package.json?raw")
+      ),
+  },
+  {
+    id: "connect-prod",
+    label: "vault-connect (npm)",
+    description: "Vault Connect browser SDK against the production Vault (vaultapi.twinprotocol.ai).",
+    load: () =>
+      bundle(
+        import("vault-connect/browser"),
+        import("vault-connect-prod-files/browser.d.ts?raw"),
+        import("vault-connect-prod-files/package.json?raw")
       ),
   },
 ];

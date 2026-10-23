@@ -78,8 +78,16 @@ export const newEnvironment = (name = "New environment"): Environment => ({
   vars: ["vaultId", "botId", "fileId", "folderId", "sessionId", "priceId"].map((key) => ({ key, value: "" })),
 });
 
-export const newConnectEnvironment = (source: "connect-dev" | "connect-staging"): Environment => ({
-  ...newEnvironment(source === "connect-dev" ? "Vault Connect dev" : "Vault Connect staging"),
+export type ConnectSource = "connect-dev" | "connect-staging" | "connect-prod";
+
+const CONNECT_NAMES: Record<ConnectSource, string> = {
+  "connect-dev": "Vault Connect dev",
+  "connect-staging": "Vault Connect staging",
+  "connect-prod": "Vault Connect production",
+};
+
+export const newConnectEnvironment = (source: ConnectSource): Environment => ({
+  ...newEnvironment(CONNECT_NAMES[source]),
   source,
   vars: ["fileId", "folderId"].map((key) => ({ key, value: "" })),
 });

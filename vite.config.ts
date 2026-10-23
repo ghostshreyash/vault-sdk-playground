@@ -23,6 +23,7 @@ export default defineConfig({
       { find: /^vault-sdk-local\//, replacement: `${hasLocalSdk ? localSdkDir : here("./src/stub-sdk")}/` },
       // The packages export only their code; the type file and package.json are read raw for the method list.
       { find: /^vault-connect-(dev|staging)-files\//, replacement: `${nm("vault-connect-$1")}/` },
+      { find: /^vault-connect-prod-files\//, replacement: `${nm("vault-connect")}/` },
       { find: /^axios$/,replacement: nm("axios/dist/esm/axios.js") },
       { find: /^events$/, replacement: nm("events/events.js") },
       { find: /^crypto$/, replacement: nm("crypto-browserify/index.js") },
@@ -52,8 +53,10 @@ export default defineConfig({
       "vault-sdk-prod",
       "vault-connect-dev",
       "vault-connect-staging",
+      "vault-connect",
       "vault-connect-dev-files",
       "vault-connect-staging-files",
+      "vault-connect-prod-files",
     ],
   },
 })
